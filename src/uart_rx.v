@@ -1,3 +1,5 @@
+//AUTHOR: SANJAY JAYARAMAN
+
 module uart_rx #(
     parameter CLOCK_FREQ = 100000000,  // System clock frequency in Hz
     parameter BAUD_RATE  = 115200      // UART baud rate
