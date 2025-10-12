@@ -48,6 +48,7 @@ module axi_uart_bridge #(
     // AXI Response codes
     localparam RESP_OKAY   = 2'b00;
     localparam RESP_SLVERR = 2'b10;
+    localparam TXBUSY = 2'b01;
     localparam INVADD = 2'b11;
 
     // Internal signals
@@ -190,7 +191,9 @@ module axi_uart_bridge #(
                             tx_data  <= write_data_latched[7:0];
                             tx_start <= 1'b1;
                         end
-                        // If tx_busy, ignore the write (could also return error)
+                        else
+                        //Error if tx is busy
+                        s_axi_bresp <= TXBUSY;
                     end
 
                     // Other addresses are read-only, ignore writes
