@@ -9,8 +9,6 @@ This project implements a **UART to AXI4-Lite bridge** in Verilog HDL, enabling 
 The design is optimised for FPGA implementation, ensuring low-latency communication, minimal resource utilisation, and deterministic behaviour suitable for embedded and SoC applications.
 
 
- ---
-
 
 ## Features
 - AXI4-Lite slave interface with standard write/read channels
@@ -24,7 +22,6 @@ The design is optimised for FPGA implementation, ensuring low-latency communicat
 - Supports configurable system clock and UART baud rate
 - Minimal logic and efficient use of FPGA resources
 
----
 
 
 ## Key Design Parameters
@@ -34,8 +31,6 @@ The design is optimised for FPGA implementation, ensuring low-latency communicat
 - AXI data width: 32 bits
 - Internal data registers: 8-bit for UART data, 2-bit status flags
 
-
----
 
 
 ## Architecture
@@ -56,11 +51,11 @@ The design consists of three main modules:
   - Generates `rx_valid` flag when a byte is successfully received
   - Clears `rx_valid` upon read acknowledgment
 
- ---
+
 
 ## Implementation & Tools
  
-**Hardware Description Language**: Verilog HDL (Verilog 2001)  
-**Synthesis Tool**: Xilinx Vivado Design Suite  
-**Target FPGA**: Nexys 4 DDR (Artix-7 XC7A100TCSG324-1)  
-**Resource Optimization**: DSP48 slices, Block RAM
+- **Hardware Description Language**: Verilog HDL (Verilog 2001)  
+- **Synthesis Tool**: Xilinx Vivado Design Suite  
+- **Target FPGA**: Nexys 4 DDR (Artix-7 XC7A100TCSG324-1)  
+- **Resource Optimization**: DSP48 slices, Block RAM
