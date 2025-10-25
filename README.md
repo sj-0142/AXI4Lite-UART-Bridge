@@ -25,7 +25,7 @@ The design is optimised for FPGA implementation, ensuring low-latency communicat
 
 
 ## Key Design Parameters
-- System clock frequency: 100 MHz (configurable - Max Clock Frequency: 330Mhz)
+- System clock frequency: 100 MHz (configurable - Max Clock Frequency: 330MHz)
 - UART baud rate: 115200 bps (configurable)
 - AXI address width: 32 bits
 - AXI data width: 32 bits
@@ -47,9 +47,9 @@ The design consists of three main modules:
   - Provides `tx_busy` flag to prevent data collision
 
 - **UART Receiver (`uart_rx.v`)**  
-  - Detects start, data, and stop bits on RX line
+  - Detects start, data, and stop bits on the RX line
   - Generates `rx_valid` flag when a byte is successfully received
-  - Clears `rx_valid` upon read acknowledgment
+  - Clears `rx_valid` upon read acknowledgement
 
 
 
@@ -58,4 +58,3 @@ The design consists of three main modules:
 - **Hardware Description Language**: Verilog HDL (Verilog 2001)  
 - **Synthesis Tool**: Xilinx Vivado Design Suite  
 - **Target FPGA**: Nexys 4 DDR (Artix-7 XC7A100TCSG324-1)  
-- **Resource Optimization**: DSP48 slices, Block RAM
