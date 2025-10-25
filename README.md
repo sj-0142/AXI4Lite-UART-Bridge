@@ -3,10 +3,7 @@
 AXI4-Lite to UART Bridge for Low-Latency Serial Communication 
 
 ## Overview
-This project implements a **UART to AXI4-Lite bridge** in Verilog HDL, enabling seamless communication between an AXI4-Lite master and a UART peripheral. It supports reliable serial data transmission and reception, with fully managed AXI4-Lite write and read transactions.  
-
-The design is optimised for FPGA implementation, ensuring low-latency communication, minimal resource utilisation, and deterministic behaviour suitable for embedded and SoC applications.
-
+This project implements a **UART to AXI4-Lite bridge** in Verilog HDL, enabling seamless communication between an AXI4-Lite master and a UART peripheral. It supports reliable serial data transmission and reception, with fully managed AXI4-Lite write and read transactions with proper valid/ready handshakes.  
 
 
 ## Features
