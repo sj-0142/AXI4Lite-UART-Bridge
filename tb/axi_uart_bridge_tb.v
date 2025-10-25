@@ -3,27 +3,24 @@
 
 module axi_uart_bridge_tb();
 
-    // Parameters
-    parameter CLOCK_FREQ = 100000000;  // 100 MHz
-    parameter BAUD_RATE  = 115200;     // 115200 baud
+    parameter CLOCK_FREQ = 100000000;  
+    parameter BAUD_RATE  = 115200;     
     parameter AXI_ADDR_WIDTH = 32;
     parameter AXI_DATA_WIDTH = 32;
 
-    parameter CLK_PERIOD = 10.0;  // 10ns for 100MHz
-    parameter BIT_PERIOD = 1000000000.0 / BAUD_RATE;  // UART bit period in ns
+    parameter CLK_PERIOD = 10.0;  
+    parameter BIT_PERIOD = 1000000000.0 / BAUD_RATE;  
 
      reg [7:0] received_data;
      
-    // Register addresses
     parameter ADDR_TXDATA = 32'h00000000;
     parameter ADDR_RXDATA = 32'h00000004;
     parameter ADDR_STATUS = 32'h00000008;
 
-    // Clock and Reset
+  
     reg                          clk;
     reg                          resetn;
 
-    // AXI4-Lite Master Interface (from testbench perspective)
     reg  [AXI_ADDR_WIDTH-1:0]    s_axi_awaddr;
     reg                          s_axi_awvalid;
     wire                         s_axi_awready;
@@ -45,7 +42,7 @@ module axi_uart_bridge_tb();
     wire                         s_axi_rvalid;
     reg                          s_axi_rready;
 
-    // UART Interface
+
     wire                         uart_tx;
     reg                          uart_rx;
     
@@ -96,6 +93,10 @@ module axi_uart_bridge_tb();
         clk = 1'b0;
         forever #(CLK_PERIOD/2) clk = ~clk;
     end
+    initial begin
+        $dumpfile("axi_uart_bridge_tb.vcd");
+        $dumpvars(0, axi_uart_bridge_tb);
+    end
     
     // AXI Write Task
     task axi_write;
@@ -104,7 +105,6 @@ module axi_uart_bridge_tb();
         begin
             @(posedge clk);
 
-            // Start write address and data phases simultaneously
             s_axi_awaddr  <= addr;
             s_axi_awvalid <= 1'b1;
 
@@ -113,17 +113,14 @@ module axi_uart_bridge_tb();
 
             s_axi_bready  <= 1'b1;
 
-            // Wait for address ready
             wait (s_axi_awready);
             @(posedge clk);
             s_axi_awvalid <= 1'b0;
 
-            // Wait for data ready
             wait (s_axi_wready);
             @(posedge clk);
             s_axi_wvalid <= 1'b0;
 
-            // Wait for write response
             wait (s_axi_bvalid);
             @(posedge clk);
             s_axi_bready <= 1'b0;
@@ -132,24 +129,20 @@ module axi_uart_bridge_tb();
         end
     endtask
 
-    // AXI Read Task
     task axi_read;
         input  [31:0] addr;
         output [31:0] data;
         begin
             @(posedge clk);
 
-            // Start read address phase
             s_axi_araddr  <= addr;
             s_axi_arvalid <= 1'b1;
             s_axi_rready  <= 1'b1;
 
-            // Wait for address ready
             wait (s_axi_arready);
             @(posedge clk);
             s_axi_arvalid <= 1'b0;
 
-            // Wait for read data
             wait (s_axi_rvalid);
             data = s_axi_rdata;
             @(posedge clk);
@@ -159,48 +152,39 @@ module axi_uart_bridge_tb();
         end
     endtask
 
-    // UART Receive Task (simulates external device sending data)
     task uart_send_byte;
         input [7:0] data;
         integer i;
         begin
             $display("UART SEND: Sending byte 0x%02h", data);
 
-            // Start bit
             uart_rx = 1'b0;
             #BIT_PERIOD;
 
-            // Data bits (LSB first)
             for (i = 0; i < 8; i = i + 1) begin
                 uart_rx = data[i];
                 #BIT_PERIOD;
             end
 
-            // Stop bit
             uart_rx = 1'b1;
             #BIT_PERIOD;
         end
     endtask
 
-    // Monitor UART TX output
     task uart_receive_byte;
         output [7:0] data;
         integer i;
         begin
-            // Wait for start bit
             wait (uart_tx == 1'b0);
             $display("UART RX: Start bit detected");
 
-            // Wait for middle of start bit
             #(BIT_PERIOD / 2);
 
-            // Sample data bits
             for (i = 0; i < 8; i = i + 1) begin
                 #BIT_PERIOD;
                 data[i] = uart_tx;
             end
 
-            // Check stop bit
             #BIT_PERIOD;
             if (uart_tx != 1'b1) begin
                 $display("ERROR: Invalid stop bit");
@@ -213,9 +197,8 @@ module axi_uart_bridge_tb();
 
 
     initial begin
-        // Initialize signals
         resetn = 1'b0;
-        uart_rx = 1'b1;  // UART idle state
+        uart_rx = 1'b1;  
 
         s_axi_awaddr  = 32'h00000000;
         s_axi_awvalid = 1'b0;
@@ -229,7 +212,6 @@ module axi_uart_bridge_tb();
         test_count = 0;
         error_count = 0;
 
-        // Wait for some time then release reset
         #(CLK_PERIOD * 10);
         resetn = 1'b1;
         #(CLK_PERIOD * 10);
@@ -261,8 +243,6 @@ module axi_uart_bridge_tb();
         $display("TEST %d: UART Transmit", test_count);
 
         test_data = 8'hA5;
-
-        // Start monitoring UART TX in parallel
         fork
             begin
                
@@ -276,19 +256,16 @@ module axi_uart_bridge_tb();
                 end
             end
             begin
-                // Write to TXDATA register
                 axi_write(ADDR_TXDATA, {24'h000000, test_data});
             end
         join
 
-        //=====================================================================
         // Test 3: Check tx_busy flag
-        //=====================================================================
+
 
         test_count = test_count + 1;
         $display("TEST %d: Check tx_busy flag", test_count);
 
-        // Immediately after write, tx_busy should be 1
         axi_read(ADDR_STATUS, read_data);
         if (read_data[0] == 1'b1) begin
             $display("PASS: tx_busy flag is set during transmission");
@@ -297,8 +274,8 @@ module axi_uart_bridge_tb();
             error_count = error_count + 1;
         end
 
-        // Wait for transmission to complete
-        #(BIT_PERIOD * 12);  // Start + 8 data + stop + margin
+  
+        #(BIT_PERIOD * 12);  
 
         axi_read(ADDR_STATUS, read_data);
         if (read_data[0] == 1'b0) begin
@@ -308,22 +285,16 @@ module axi_uart_bridge_tb();
             error_count = error_count + 1;
         end
 
-        //=====================================================================
+      
         // Test 4: UART Receive
-        //=====================================================================
+
 
         test_count = test_count + 1;
         $display("TEST %d: UART Receive", test_count);
 
         test_data = 8'h5A;
-
-        // Send data via UART RX
         uart_send_byte(test_data);
-
-        // Allow some time for processing
         #(CLK_PERIOD * 10);
-
-        // Check rx_valid flag
         axi_read(ADDR_STATUS, read_data);
         if (read_data[1] == 1'b1) begin
             $display("PASS: rx_valid flag set after reception");
@@ -331,8 +302,6 @@ module axi_uart_bridge_tb();
             $display("FAIL: rx_valid flag not set after reception");
             error_count = error_count + 1;
         end
-
-        // Read received data
         axi_read(ADDR_RXDATA, read_data);
         if (read_data[7:0] == test_data) begin
             $display("PASS: Received correct data via UART RX");
@@ -341,8 +310,6 @@ module axi_uart_bridge_tb();
                     test_data, read_data[7:0]);
             error_count = error_count + 1;
         end
-
-        // Check that rx_valid flag is cleared after reading
         #(CLK_PERIOD * 2);
         axi_read(ADDR_STATUS, read_data);
         if (read_data[1] == 1'b0) begin
@@ -356,23 +323,17 @@ module axi_uart_bridge_tb();
 
         test_count = test_count + 1;
         $display("TEST %d: Loopback Test", test_count);
-
-        // Test multiple bytes
         test_loopback(8'h00);
         test_loopback(8'hFF);
         test_loopback(8'hAA);
         test_loopback(8'h55);
         test_loopback(8'h33);
 
-  
-        // Test 6: Invalid address read
-
-
         test_count = test_count + 1;
         $display("TEST %d: Invalid Address Read", test_count);
 
         axi_read(32'h0000000C, read_data);  // Invalid address
-        // Note: Should return SLVERR response, but we don't check response in this simple test
+
 
         // Test Summary
   
@@ -394,7 +355,7 @@ module axi_uart_bridge_tb();
         $finish;
     end
 
-    // Loopback test task
+
     task test_loopback;
         input [7:0] data;
         begin
@@ -402,14 +363,12 @@ module axi_uart_bridge_tb();
 
             $display("Loopback test with data: 0x%02h", data);
 
-            // Send via UART RX
             uart_send_byte(data);
             #(CLK_PERIOD * 10);
 
-            // Read received data
+
             axi_read(ADDR_RXDATA, read_data);
 
-            // Echo back via UART TX
             fork
                 uart_receive_byte(received_data);
                 axi_write(ADDR_TXDATA, {24'h000000, read_data[7:0]});
@@ -424,20 +383,11 @@ module axi_uart_bridge_tb();
         end
     endtask
 
-
-    // Simulation Control
-
-    // Timeout
     initial begin
-        #(BIT_PERIOD * 1000);  // Long timeout
+        #(BIT_PERIOD * 1000);  
         $display("ERROR: Simulation timeout");
         $finish;
     end
 
-    // Dump waveforms
-    initial begin
-        $dumpfile("axi_uart_bridge_tb.vcd");
-        $dumpvars(0, axi_uart_bridge_tb);
-    end
 
 endmodule
