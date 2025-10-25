@@ -1,5 +1,5 @@
 
-# AXI UART Bridge
+# AXI4-Lite <-> UART Bridge
 AXI4-Lite to UART Bridge for Low-Latency Serial Communication 
 
 ## Overview
