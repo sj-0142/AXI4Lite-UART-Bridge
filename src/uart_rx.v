@@ -68,15 +68,15 @@ module uart_rx #(
                 end
 
                 START_BIT: begin
-                    if (bit_counter == (CLKS_PER_BIT / 2)) begin
-                        if (uart_rx_sync2 == 1'b0) begin
-                            bit_counter <= {COUNTER_WIDTH{1'b0}};
-                            state       <= DATA_BITS;
+                    if (bit_counter < (CLKS_PER_BIT -1)) begin
+                        if (uart_rx_sync2 != 1'b0) begin
+                            state<=IDLE;
                         end else begin
-                            state <= IDLE;  
+                           bit_counter<=bit_counter+1'b1;
                         end
                     end else begin
-                        bit_counter <= bit_counter + 1'b1;
+                            bit_counter <= {COUNTER_WIDTH{1'b0}};
+                            state       <= DATA_BITS;
                     end
                 end
 
